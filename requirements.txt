@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-dotenv
+beautifulsoup4
+python-docx
+PyPDF2
+python-pptx
+pydantic
+langchain
+langchain_ollama
+faiss-cpu
