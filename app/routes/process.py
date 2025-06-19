@@ -11,7 +11,9 @@ router = APIRouter()
 # Global vector store reference
 vector_store = None
 
-# Process and embed uploaded documents
+
+VECTOR_STORE_DIR = "vectorstore"  
+
 @router.post("/process")
 async def process_documents():
     global vector_store
@@ -22,4 +24,8 @@ async def process_documents():
 
     split_docs = text_splitter.split_documents(documents)
     vector_store = FAISS.from_documents(split_docs, embeddings)
-    return {"message": f"Processed {len(split_docs)} document chunks."}
+
+    # Save the vector store to disk
+    vector_store.save_local(VECTOR_STORE_DIR)
+
+    return {"message": f"Processed and saved {len(split_docs)} document chunks."}

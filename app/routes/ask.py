@@ -3,11 +3,13 @@
 # app/routes/ask.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.utils.settings import llm
-from app.routes.process import vector_store
+from app.utils.settings import llm, embeddings
+from app.routes.process import vector_store, VECTOR_STORE_DIR
+from langchain_community.vectorstores import FAISS  # Correct import
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+import os
 
 router = APIRouter()
 
@@ -15,15 +17,19 @@ router = APIRouter()
 class QuestionRequest(BaseModel):
     question: str
 
-# Format document chunks for context injection
+# Context injection - format documetn chunks
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-# Endpoint to answer user questions using RAG
 @router.post("/ask")
 async def ask_question(request: QuestionRequest):
-    if not vector_store:
-        raise HTTPException(status_code=400, detail="Process documents first.")
+    global vector_store
+
+    # Try loading from disk if not already loaded
+    if vector_store is None:
+        if not os.path.isdir(VECTOR_STORE_DIR):
+            raise HTTPException(status_code=400, detail="Documents not processed yet. Please call /process first.")
+        vector_store = FAISS.load_local(VECTOR_STORE_DIR, embeddings, allow_dangerous_deserialization=True)
 
     retriever = vector_store.as_retriever(k=4)
 
