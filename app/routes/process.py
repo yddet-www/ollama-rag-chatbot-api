@@ -1,18 +1,12 @@
-# Author: Atishay Jain
-
 # app/routes/process.py
+# Author - Atishay Jain 
 from fastapi import APIRouter, HTTPException
 from app.utils.loader import load_documents
 from app.utils.settings import text_splitter, embeddings, DOCUMENTS_DIR
+from app.utils.vectorstore_state import vector_store, VECTOR_STORE_DIR
 from langchain_community.vectorstores import FAISS
 
 router = APIRouter()
-
-# Global vector store reference
-vector_store = None
-
-
-VECTOR_STORE_DIR = "vectorstore"  
 
 @router.post("/process")
 async def process_documents():

@@ -26,3 +26,6 @@ async def upload_files(files: List[UploadFile] = File(...)):
             f.write(contents)
 
     return {"message": f"Successfully uploaded {len(files)} file(s)."}
+
+
+

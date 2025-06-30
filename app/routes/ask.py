@@ -1,11 +1,8 @@
-# Author: Atishay Jain
-
-# app/routes/ask.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.utils.settings import llm, embeddings
-from app.routes.process import vector_store, VECTOR_STORE_DIR
-from langchain_community.vectorstores import FAISS  # Correct import
+from app.utils.vectorstore_state import vector_store, VECTOR_STORE_DIR
+from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
@@ -13,11 +10,9 @@ import os
 
 router = APIRouter()
 
-# Request model for incoming questions
 class QuestionRequest(BaseModel):
     question: str
 
-# Context injection - format documetn chunks
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
@@ -25,19 +20,32 @@ def format_docs(docs):
 async def ask_question(request: QuestionRequest):
     global vector_store
 
-    # Try loading from disk if not already loaded
+    # Always check if the vectorstore folder exists
+    if not os.path.isdir(VECTOR_STORE_DIR):
+        vector_store = None  # Invalidate in-memory reference
+        raise HTTPException(status_code=400, detail="Documents not processed yet or deleted. Please call /process again.")
+
     if vector_store is None:
-        if not os.path.isdir(VECTOR_STORE_DIR):
-            raise HTTPException(status_code=400, detail="Documents not processed yet. Please call /process first.")
         vector_store = FAISS.load_local(VECTOR_STORE_DIR, embeddings, allow_dangerous_deserialization=True)
 
-    retriever = vector_store.as_retriever(k=4)
+    # Use MMR-based retriever for better semantic coverage
+    retriever = vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": 5, "fetch_k": 15}
+    )
 
-    prompt_template = """Answer the question based only on the following context:
-    {context}
+    # Improved prompt that encourages referencing source filenames
+    prompt_template = """You are an assistant with access to the following documents.
 
-    Question: {question}
-    Answer in a clear and concise manner. If you don't know the answer, say 'I don't know'."""
+Use only the context provided below to answer the question. If any of the source files seem relevant, mention them.
+
+Context:
+{context}
+
+Question: {question}
+
+Answer:
+"""
 
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
