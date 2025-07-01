@@ -25,8 +25,8 @@ async def ask_question(request: QuestionRequest):
         vector_store = None  # Invalidate in-memory reference
         raise HTTPException(status_code=400, detail="Documents not processed yet or deleted. Please call /process again.")
 
-    if vector_store is None:
-        vector_store = FAISS.load_local(VECTOR_STORE_DIR, embeddings, allow_dangerous_deserialization=True)
+    # if vector_store is None:
+    vector_store = FAISS.load_local(VECTOR_STORE_DIR, embeddings, allow_dangerous_deserialization=True)
 
     # Use MMR-based retriever for better semantic coverage
     retriever = vector_store.as_retriever(

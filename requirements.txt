@@ -9,3 +9,5 @@ pydantic
 langchain
 langchain_ollama
 faiss-cpu
+langchain_community
+python-multipart
