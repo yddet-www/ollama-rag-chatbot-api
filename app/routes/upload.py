@@ -11,7 +11,7 @@ os.makedirs(DOCUMENTS_DIR, exist_ok=True)
 router = APIRouter()
 
 # Upload endpoint for supported document formats
-@router.post("/upload")
+@router.post("/api/upload")
 async def upload_files(files: List[UploadFile] = File(...)):
     for file in files:
         if not file.filename.endswith((".txt", ".xml", ".docx", ".csv", ".pdf", ".pptx")):

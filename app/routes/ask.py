@@ -16,7 +16,7 @@ class QuestionRequest(BaseModel):
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-@router.post("/ask")
+@router.post("/api/ask")
 async def ask_question(request: QuestionRequest):
     global vector_store
 

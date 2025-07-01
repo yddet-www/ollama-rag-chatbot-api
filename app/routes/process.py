@@ -8,7 +8,7 @@ from langchain_community.vectorstores import FAISS
 
 router = APIRouter()
 
-@router.post("/process")
+@router.post("/api/process")
 async def process_documents():
     global vector_store
     documents = load_documents(DOCUMENTS_DIR)
