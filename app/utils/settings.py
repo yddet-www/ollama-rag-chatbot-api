@@ -9,7 +9,7 @@ from langchain_ollama import OllamaEmbeddings, ChatOllama
 
 
 # Model configuration
-OLLAMA_MODEL = "llama3.2"
+OLLAMA_MODEL = "smollm"
 
 # LLM and Embedding model initialization
 embeddings = OllamaEmbeddings(model=OLLAMA_MODEL)
